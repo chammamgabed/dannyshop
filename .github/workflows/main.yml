@@ -1,0 +1,41 @@
+name: RDP Ubuntu
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update system
+      run: sudo apt update && sudo apt upgrade -y
+
+    - name: Install Desktop
+      run: |
+        sudo apt install xfce4 xfce4-goodies -y
+
+    - name: Install XRDP
+      run: |
+        sudo apt install xrdp -y
+        sudo systemctl enable xrdp
+        sudo systemctl start xrdp
+
+    - name: Set password
+      run: |
+        echo "runner:123456" | sudo chpasswd
+
+    - name: Install ngrok
+      run: |
+        wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-linux-amd64.zip
+        unzip ngrok-stable-linux-amd64.zip
+        chmod +x ngrok
+
+    - name: Connect ngrok
+      run: |
+        ./ngrok authtoken YOUR_NGROK_TOKEN
+
+    - name: Start RDP Tunnel
+      run: |
+        ./ngrok tcp 3389 &
+        sleep 10
+        curl http://localhost:4040/api/tunnels
