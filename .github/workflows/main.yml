@@ -5,24 +5,19 @@ on: [workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 360
 
     steps:
     - name: Update system
-      run: sudo apt update && sudo apt upgrade -y
-
-    - name: Install Desktop
-      run: |
-        sudo apt install xfce4 xfce4-goodies -y
+      run: sudo apt update
 
     - name: Install XRDP
       run: |
         sudo apt install xrdp -y
-        sudo systemctl enable xrdp
         sudo systemctl start xrdp
 
     - name: Set password
-      run: |
-        echo "runner:123456" | sudo chpasswd
+      run: echo "runner:123456" | sudo chpasswd
 
     - name: Install ngrok
       run: |
@@ -30,12 +25,14 @@ jobs:
         unzip ngrok-stable-linux-amd64.zip
         chmod +x ngrok
 
-    - name: Connect ngrok
-      run: |
-        ./ngrok authtoken YOUR_NGROK_TOKEN
+    - name: Add token
+      run: ./ngrok authtoken YOUR_NGROK_TOKEN
 
-    - name: Start RDP Tunnel
+    - name: Start tunnel
       run: |
         ./ngrok tcp 3389 &
         sleep 10
         curl http://localhost:4040/api/tunnels
+
+    - name: Keep alive
+      run: sleep 6h
