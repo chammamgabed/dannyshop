@@ -8,15 +8,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Update system
       run: sudo apt update
 
-    - name: Install XFCE Desktop
-      run: sudo apt install xfce4 xfce4-goodies -y
+    - name: Install XFCE & XRDP
+      run: |
+        sudo apt install xfce4 xfce4-goodies -y
+        sudo apt install xrdp -y
 
-    - name: Install XRDP
-      run: sudo apt install xrdp -y
+    - name: Set XFCE session
+      run: echo xfce4-session > ~/.xsession
 
     - name: Start XRDP
       run: sudo service xrdp start
@@ -24,11 +25,16 @@ jobs:
     - name: Create user
       run: |
         sudo useradd -m user
-        echo "user:123456" | sudo chpasswd
-        sudo usermod -aG sudo user
+        echo "user:1234" | sudo chpasswd
+        sudo adduser user sudo
 
-    - name: Set XFCE session
-      run: echo xfce4-session > ~/.xsession
+    - name: Install SSH client
+      run: sudo apt install openssh-client -y
 
     - name: Start tunnel
-      run: ssh -o StrictHostKeyChecking=no -R 3389:localhost:3389 serveo.net
+      run: |
+        echo "==== RDP READY ===="
+        echo "Username: user"
+        echo "Password: 1234"
+        echo "==================="
+        ssh -tt -o StrictHostKeyChecking=no -R 80:localhost:3389 localhost.run
