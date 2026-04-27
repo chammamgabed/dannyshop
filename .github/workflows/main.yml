@@ -12,7 +12,7 @@ jobs:
     - name: Update system
       run: sudo apt update
 
-    - name: Install XFCE Desktop (خفيف)
+    - name: Install XFCE Desktop
       run: sudo apt install xfce4 xfce4-goodies -y
 
     - name: Install XRDP
@@ -30,13 +30,5 @@ jobs:
     - name: Set XFCE session
       run: echo xfce4-session > ~/.xsession
 
-    - name: Install ngrok
-      run: |
-        wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip
-        unzip ngrok-v3-stable-linux-amd64.zip
-
-    - name: Add ngrok token
-      run: ./ngrok config add-authtoken ${{ secrets.NGROK_TOKEN }}
-
     - name: Start tunnel
-      run: ./ngrok tcp 3389
+      run: ssh -o StrictHostKeyChecking=no -R 3389:localhost:3389 serveo.net
