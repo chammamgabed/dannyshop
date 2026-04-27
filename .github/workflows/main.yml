@@ -1,40 +1,25 @@
-name: RDP Ubuntu
+name: Free RDP
 
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
-    - name: Update system
-      run: sudo apt update
-
-    - name: Install XFCE & XRDP
+    - name: Enable RDP
       run: |
-        sudo apt install xfce4 xfce4-goodies -y
-        sudo apt install xrdp -y
+        net user runneradmin YourPassword123
+        net localgroup administrators runneradmin /add
+        reg add "HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-    - name: Set XFCE session
-      run: echo xfce4-session > ~/.xsession
-
-    - name: Start XRDP
-      run: sudo service xrdp start
-
-    - name: Create user
+    - name: Download Ngrok
       run: |
-        sudo useradd -m user
-        echo "user:1234" | sudo chpasswd
-        sudo adduser user sudo
+        Invoke-WebRequest https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip -OutFile ngrok.zip
+        Expand-Archive ngrok.zip
 
-    - name: Install SSH client
-      run: sudo apt install openssh-client -y
-
-    - name: Start tunnel
+    - name: Connect Ngrok
       run: |
-        echo "==== RDP READY ===="
-        echo "Username: user"
-        echo "Password: 1234"
-        echo "==================="
-        ssh -tt -o StrictHostKeyChecking=no -R 80:localhost:3389 localhost.run
+        .\ngrok\ngrok.exe authtoken YOUR_NGROK_TOKEN
+        .\ngrok\ngrok.exe tcp 3389
