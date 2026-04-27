@@ -6,41 +6,37 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
 
     steps:
-    - name: Update system
-      run: |
-        sudo apt update && sudo apt upgrade -y
 
-    - name: Install Desktop
-      run: |
-        sudo apt install xfce4 xfce4-goodies -y
+    - name: Update system
+      run: sudo apt update
+
+    - name: Install XFCE Desktop (خفيف)
+      run: sudo apt install xfce4 xfce4-goodies -y
 
     - name: Install XRDP
-      run: |
-        sudo apt install xrdp -y
-        sudo systemctl start xrdp
+      run: sudo apt install xrdp -y
 
-    - name: Set password
+    - name: Start XRDP
+      run: sudo service xrdp start
+
+    - name: Create user
       run: |
         sudo useradd -m user
         echo "user:123456" | sudo chpasswd
-        sudo adduser user sudo
+        sudo usermod -aG sudo user
+
+    - name: Set XFCE session
+      run: echo xfce4-session > ~/.xsession
 
     - name: Install ngrok
       run: |
-        wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz
-        tar -xvzf ngrok-v3-stable-linux-amd64.tgz
+        wget https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.zip
+        unzip ngrok-v3-stable-linux-amd64.zip
 
     - name: Add ngrok token
-      run: |
-        ./ngrok config add-authtoken YOUR_NGROK_TOKEN
-
-    - name: Start RDP
-      run: |
-        sudo systemctl restart xrdp
+      run: ./ngrok config add-authtoken ${{ secrets.NGROK_TOKEN }}
 
     - name: Start tunnel
-      run: |
-        ./ngrok tcp 3389
+      run: ./ngrok tcp 3389
